@@ -18,8 +18,16 @@ if(process.env.NODE_ENV==='production'){
 		res.sendFile(path.join(__dirname+"/build/index.html"))
 	})
 }
+app.set('port', (process.env.PORT || 5000))
 
-let sanitizeString = (str) => {
+// Getting Request
+app.get('/', (req, res) => {
+ 
+  // Sending the response
+  res.status(404).send("404 / This Page Does not Exist")
+})
+
+const sanitizeString = (str) => {
 	return xss(str)
 }
 
@@ -47,8 +55,6 @@ io.on('connection', (socket) => {
 					messages[path][a]['sender'], messages[path][a]['socket-id-sender'])
 			}
 		}
-
-		console.log(path, connections[path])
 	})
 
 	socket.on('signal', (toId, message) => {
@@ -75,7 +81,6 @@ io.on('connection', (socket) => {
 				messages[key] = []
 			}
 			messages[key].push({"sender": sender, "data": data, "socket-id-sender": socket.id})
-			console.log("message", key, ":", sender, data)
 
 			for(let a = 0; a < connections[key].length; ++a){
 				io.to(connections[key][a]).emit("chat-message", data, sender, socket.id)
@@ -97,9 +102,6 @@ io.on('connection', (socket) => {
 			
 					var index = connections[key].indexOf(socket.id)
 					connections[key].splice(index, 1)
-
-					console.log(key, socket.id, Math.ceil(diffTime / 1000))
-
 					if(connections[key].length === 0){
 						delete connections[key]
 					}
@@ -109,6 +111,6 @@ io.on('connection', (socket) => {
 	})
 })
 
-server.listen(5000, () => {
-	console.log("listening on", 5000)
+server.listen(app.get('port'), () => {
+	console.log("listening on", app.get('port'))
 })
