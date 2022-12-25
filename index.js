@@ -20,13 +20,6 @@ if(process.env.NODE_ENV==='production'){
 }
 app.set('port', (process.env.PORT || 5000))
 
-// Getting Request
-app.get('/', (req, res) => {
- 
-  // Sending the response
-  res.status(404).send("404 / This Page Does not Exist")
-})
-
 const sanitizeString = (str) => {
 	return xss(str)
 }
@@ -34,19 +27,20 @@ const sanitizeString = (str) => {
 let connections = {}
 let messages = {}
 let timeOnline = {}
+let users = {}
 
 io.on('connection', (socket) => {
 
-	socket.on('join-call', (path) => {
+	socket.on('join-call', (path, username) => {
 		if(connections[path] === undefined){
 			connections[path] = []
 		}
 		connections[path].push(socket.id)
-
+		users[socket.id]=username;
 		timeOnline[socket.id] = new Date()
 
 		for(let a = 0; a < connections[path].length; ++a){
-			io.to(connections[path][a]).emit("user-joined", socket.id, connections[path])
+			io.to(connections[path][a]).emit("user-joined", socket.id, connections[path], users)
 		}
 
 		if(messages[path] !== undefined){
@@ -55,6 +49,9 @@ io.on('connection', (socket) => {
 					messages[path][a]['sender'], messages[path][a]['socket-id-sender'])
 			}
 		}
+
+		// console.log(path, connections[path])
+		
 	})
 
 	socket.on('signal', (toId, message) => {
@@ -81,6 +78,7 @@ io.on('connection', (socket) => {
 				messages[key] = []
 			}
 			messages[key].push({"sender": sender, "data": data, "socket-id-sender": socket.id})
+			// console.log("message", key, ":", sender, data)
 
 			for(let a = 0; a < connections[key].length; ++a){
 				io.to(connections[key][a]).emit("chat-message", data, sender, socket.id)
@@ -89,7 +87,7 @@ io.on('connection', (socket) => {
 	})
 
 	socket.on('disconnect', () => {
-		var diffTime = Math.abs(timeOnline[socket.id] - new Date())
+		// var diffTime = Math.abs(timeOnline[socket.id] - new Date())
 		var key
 		for (const [k, v] of JSON.parse(JSON.stringify(Object.entries(connections)))) {
 			for(let a = 0; a < v.length; ++a){
@@ -102,12 +100,16 @@ io.on('connection', (socket) => {
 			
 					var index = connections[key].indexOf(socket.id)
 					connections[key].splice(index, 1)
+
+					// console.log(key, socket.id, Math.ceil(diffTime / 1000))
+
 					if(connections[key].length === 0){
 						delete connections[key]
 					}
 				}
 			}
 		}
+		if(connections.length===0)users={};
 	})
 })
 
