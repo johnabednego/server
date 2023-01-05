@@ -12,12 +12,12 @@ var io = require('socket.io')(server).listen(443);
 app.use(cors())
 app.use(bodyParser.json())
 
-if(process.env.NODE_ENV==='production'){
-	app.use(express.static(__dirname+"/build"))
-	app.get("*", (req, res) => {
-		res.sendFile(path.join(__dirname+"/build/index.html"))
-	})
-}
+// if(process.env.NODE_ENV==='production'){
+// 	app.use(express.static(__dirname+"/build"))
+// 	app.get("*", (req, res) => {
+// 		res.sendFile(path.join(__dirname+"/build/index.html"))
+// 	})
+// }
 app.set('port', (process.env.PORT || 443))
 
 const sanitizeString = (str) => {
