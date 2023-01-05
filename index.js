@@ -7,7 +7,7 @@ const path = require("path")
 var xss = require("xss")
 
 var server = http.createServer(app)
-var io = require('socket.io')(server)
+var io = require('socket.io')(server).listen(443);
 
 app.use(cors())
 app.use(bodyParser.json())
@@ -18,7 +18,7 @@ if(process.env.NODE_ENV==='production'){
 		res.sendFile(path.join(__dirname+"/build/index.html"))
 	})
 }
-app.set('port', (process.env.PORT || 4001))
+app.set('port', (process.env.PORT || 443))
 
 const sanitizeString = (str) => {
 	return xss(str)
