@@ -10,9 +10,7 @@ var server = http.createServer(app)
 var io = require('socket.io')(server,
 	{
 		allowEIO3: true, // false by default
-		allowRequest: (req, callback) => {
-			callback(null, false);
-		  }
+	
 	  }
 	).listen(443);
 
