@@ -7,9 +7,7 @@ const path = require("path")
 var xss = require("xss")
 
 var server = http.createServer(app)
-var io = require('socket.io')(server, {
-	allowEIO3: true
-}).connectParams({"EIO":"3"}).listen(443);
+var io = require('socket.io')(server).listen(443);
 
 app.use(cors())
 app.use(bodyParser.json())
